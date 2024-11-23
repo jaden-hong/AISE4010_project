@@ -102,7 +102,7 @@ def process_data(df,targets,features):
     df = df.sort_index()
     df = df[targets+features] #only using necessary data
     #drop empty rows:
-    df.dropna(axis=0, how='all', inplace=True)
+    df.dropna(axis=0, how='all', inplace=True) #drops where all are null
     # print(df['Time'].head())
     
     df['Time'] = df['Time'].apply(standardize_time_format)
@@ -125,36 +125,50 @@ def process_data(df,targets,features):
     # print(unique_directions)
 
     #one hot encoding
-    # categorical_features = df.select_dtypes(include=['object']).columns # only categorical features selected
-    categorical_features = ['Route','Direction']
-    df['Route'] = df['Route'].astype(str)
-    df['Direction'] = df['Direction'].astype(str)
+    categorical_features = df.select_dtypes(include=['object']).columns # only categorical features selected
+    # categorical_features = ['Route','Direction']
+    for features in categorical_features:
+        df[features] = df[features].astype(str)
+    # df['Route'] = df['Route'].astype(str)
+    # df['Direction'] = df['Direction'].astype(str)
 
     encoder = OneHotEncoder(sparse_output=False, drop='first')
     encoded_features = encoder.fit_transform(df[categorical_features])
     
     encoded_df = pd.DataFrame(encoded_features, columns=encoder.get_feature_names_out(categorical_features))
     df = pd.concat([df, encoded_df], axis=1)
+
+    df.drop(categorical_features, axis=1, inplace=True)
+
     df.set_index('Datetime',inplace=True)
+
+    # Extract year, month, day, hour, and minute from the Datetime index
+    df['year'] = df.index.year
+    df['month'] = df.index.month
+    df['day'] = df.index.day
+    df['hour'] = df.index.hour
+    df['minute'] = df.index.minute
      
     scaler = StandardScaler() #standard because we expect standard deviation
     # scaler = MinMaxScaler() #min max because ...
 
     df[['Min Delay']] = scaler.fit_transform(df[['Min Delay']])
-
+    df.dropna(axis=0, how='any', inplace=True)
+    
     # plot the delay
 
-    monthly_delays = df['Min Delay'].resample('W').mean()
-    monthly_delays.dropna(inplace=True)
+    # monthly_delays = df['Min Delay'].resample('W').mean()
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(monthly_delays, label='Minimum delay')
-    plt.title('Min delay time series')
-    plt.xlabel('Date')
-    plt.ylabel('Min Delay')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(monthly_delays, label='Minimum delay')
+    # plt.title('Min delay time series')
+    # plt.xlabel('Date')
+    # plt.ylabel('Min Delay')
+    # plt.legend()
+    # plt.grid(True)
+    # plt.show()
+
+    return df
 
 
 def main():
