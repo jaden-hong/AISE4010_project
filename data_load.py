@@ -92,7 +92,7 @@ def standardize_date_format(date_str):
         print(f"Could not parse '{date_str}': {e}")
         return None
 
-def process_data(df,targets,features):
+def process_data(df,targets,features,start="-01-01"):
     '''
     Takes in dataframe and preprocesses based off arguments 
     '''
@@ -168,8 +168,7 @@ def process_data(df,targets,features):
     # plt.grid(True)
     # plt.show()
 
-    return df
-
+    return df,scaler
 
 def main():
     transit_type = "streetcar"
