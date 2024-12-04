@@ -2,6 +2,7 @@
 config.py
 *.pkl
 *.png
+kt_dir/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
